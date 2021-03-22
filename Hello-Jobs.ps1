@@ -67,9 +67,11 @@ while ($Completed -eq $false) {
     $AllJobs = Get-Job -Name "$JobPrefix*"
 
     ## If there are no more jobs, end
-    if (($AllJobs.State -eq "Completed") -and ($AllJobs.HasMoreData -eq $False)) {
-
-        $Completed = $True
+    ## Make sure that you remove jobs after completion, or else this will not be $null
+    if ($AllJobs -eq $null) {
+        
+        $Completed = $true
+        continue
     }
 
     foreach ($Job in $AllJobs) {
@@ -89,11 +91,12 @@ while ($Completed -eq $false) {
         ## Note that "HasMoreData" is important. If the job is completed AND already received,
         ## .HasMoreData will be $false. $true signifies that the job has not delivered its data.
         if (($Job.State -eq "Completed") -and ($Job.HasMoreData -eq $true)) {
-            
+
             $JobResult = Receive-Job -Name $Job.Name
             $FinalTree += $JobResult
 
-            Write-Host "$(Job.Name) has completed!"
+            Write-Host "$($Job.Name) has completed!"
+            Remove-Job -Name $Job.Name
         }
     }
 }
