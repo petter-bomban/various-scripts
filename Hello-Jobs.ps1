@@ -86,7 +86,10 @@ while ($Completed -eq $false) {
         ## ...
 
         ## Job's done! Add results to $FinalTree
-        if ($Job.State -eq "Completed") {
+        ## Note that "HasMoreData" is important. If the job is completed AND already received,
+        ## .HasMoreData will be $false. $true signifies that the job has not delivered its data.
+        if (($Job.State -eq "Completed") -and ($Job.HasMoreData -eq $true)) {
+            
             $JobResult = Receive-Job -Name $Job.Name
             $FinalTree += $JobResult
 
